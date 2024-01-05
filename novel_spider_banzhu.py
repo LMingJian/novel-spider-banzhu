@@ -115,6 +115,8 @@ class SpiderBanZhu:
             self._check()
             content = self.get_content()
             with open(f'./result/[{novel_author}] {novel_name}{target}.txt', 'wb') as f:
+                f.write(f'{novel_name}{target}'.encode('UTF-8'))
+                f.write('\n\n'.encode('UTF-8'))
                 for _ in content:
                     f.write(_.encode('UTF-8'))
                     f.write('\n\n'.encode('UTF-8'))
