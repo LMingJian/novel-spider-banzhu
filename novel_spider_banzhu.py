@@ -31,6 +31,15 @@ class SpiderBanZhu:
         print(f'请手动获取 cf_referer ')
         self.cf_referer = input('cf_referer: ')
         print("====================")
+        print('系统初始化。。。')
+        try:
+            self._verify(self.baseurl)
+            self._check()
+        except BaseException:  # noqa
+            print('初始化异常，程序退出')
+            return 0
+        print('初始化成功')
+        print("====================")
         print('1.搜索')
         print('2.下载')
         print('6.退出')
@@ -50,8 +59,6 @@ class SpiderBanZhu:
         print('退出系统')
 
     def _search(self):
-        self._verify(self.baseurl)
-        self._check()
         key = input('请输入关键字(exit 退出): ')
         if key == 'exit':
             return 0
@@ -82,8 +89,6 @@ class SpiderBanZhu:
                 continue
 
     def _download(self):
-        self._verify(self.baseurl)
-        self._check()
         url = input('请输入链接 /?????/ (exit 退出): ')
         if url == 'exit':
             return 0
@@ -115,8 +120,6 @@ class SpiderBanZhu:
             self._check()
             content = self.get_content()
             with open(f'./result/[{novel_author}] {novel_name}{target}.txt', 'wb') as f:
-                f.write(f'{novel_name}{target}'.encode('UTF-8'))
-                f.write('\n\n'.encode('UTF-8'))
                 for _ in content:
                     f.write(_.encode('UTF-8'))
                     f.write('\n\n'.encode('UTF-8'))
@@ -154,6 +157,7 @@ class SpiderBanZhu:
     def get_catalog(self):
         catalog = []
         flag = 0
+        page = -1
         while True:
             node = self._browser.find_elements(By.CSS_SELECTOR, 'div.mod:nth-child(7) a')
             for each in node:
@@ -164,7 +168,10 @@ class SpiderBanZhu:
             _next = self._browser.find_element(By.CSS_SELECTOR, '.nextPage')
             _end = self._browser.find_element(By.CSS_SELECTOR, '.endPage')
             if _next.get_attribute('href') == _end.get_attribute('href'):
-                break
+                if page != 0:
+                    page += 1
+                else:
+                    break
             _next.click()
             time.sleep(self.default)
             self._check()
