@@ -165,10 +165,11 @@ class SpiderBanZhu:
                 catalog_link = each.get_attribute('href')
                 catalog.append({catalog_name: catalog_link})
                 flag += 1
+            _pre = self._browser.find_element(By.CSS_SELECTOR, '.prePage')
             _next = self._browser.find_element(By.CSS_SELECTOR, '.nextPage')
             _end = self._browser.find_element(By.CSS_SELECTOR, '.endPage')
             if _next.get_attribute('href') == _end.get_attribute('href'):
-                if page != 0:
+                if _end.get_attribute('href') != _pre.get_attribute('href') and page != 0:
                     page += 1
                 else:
                     break
