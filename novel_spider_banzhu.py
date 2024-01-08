@@ -1,3 +1,5 @@
+import sys
+
 import bs4
 from bs4 import BeautifulSoup
 import time
@@ -101,9 +103,13 @@ class SpiderBanZhu:
         print(novel_name)
         print(novel_author)
         print("====================")
+        if input('是否开始下载(exit 退出): ') == 'exit':
+            return 0
+        print("====================")
         print('开始获取章节目录')
         catalog = self.get_catalog()
         print("====================")
+        print(f'总共 {len(catalog)} 章')
         target = input('请输入开始章节，从 0 开始：')
         try:
             target = int(target)
@@ -145,14 +151,18 @@ class SpiderBanZhu:
 
     def _check(self):
         """检查页面是否正常"""
-        while True:
+        flag = 0
+        while flag < 5:
             try:
                 self._browser.find_element(By.CSS_SELECTOR, '.logo img')
                 break
             except BaseException:  # noqa
+                flag += 1
                 print('跳转异常，重试中。。。')
                 self._browser.refresh()
                 time.sleep(self.default)
+        else:
+            sys.exit("Cloudflare Cookie 过期，请重新获取！")
 
     def get_catalog(self):
         catalog = []
