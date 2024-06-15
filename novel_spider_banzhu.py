@@ -19,8 +19,42 @@ class SpiderBanZhu:
         self.cf_clearance = ''
         self.cf_referer = ''
         self.baseurl = ''
-        self.default = 5
+        self.default = 6
         self._menu()
+
+    def _check(self):
+        """检查页面是否正常（尝试 5 次）"""
+        flag = 0
+        while flag < 5:
+            try:
+                time.sleep(self.default)
+                self._browser.find_element(By.CSS_SELECTOR, '.logo img')
+                break
+            except BaseException:  # noqa
+                flag += 1
+                print('跳转异常，重试中。。。')
+                self._browser.refresh()
+        else:
+            sys.exit("尝试超过 5 次，Cookie 可能过期，请重新获取！")
+
+    def _verify(self, url):
+        """进行验证绕过"""
+        try:
+            self._browser.get(url)
+            self._browser.execute_script('window.stop()')
+            self._browser.add_cookie({'name': 'cf_clearance', 'value': self.cf_clearance})
+            self._browser.get(url + '/?__cf_chl_tk=' + self.cf_referer)
+            time.sleep(self.default)
+            try:
+                self._browser.find_element(By.CSS_SELECTOR, '.logo img')
+            except BaseException as res1:  # noqa
+                print(res1)
+                self._browser.find_element(By.CSS_SELECTOR, '#password').send_keys('1234')
+                self._browser.find_element(By.CSS_SELECTOR, '.login').click()
+            self._check()
+        except BaseException as res2:  # noqa
+            print(res2)
+            sys.exit('验证异常，程序退出')
 
     def _menu(self):
         print("====================")
@@ -34,12 +68,7 @@ class SpiderBanZhu:
         self.cf_referer = input('cf_referer: ')
         print("====================")
         print('系统初始化。。。')
-        try:
-            self._verify(self.baseurl)
-            self._check()
-        except BaseException:  # noqa
-            print('初始化异常，程序退出')
-            return 0
+        self._verify(self.baseurl)
         print('初始化成功')
         print("====================")
         print('1.搜索')
@@ -95,7 +124,6 @@ class SpiderBanZhu:
         if url == 'exit':
             return 0
         self._browser.get(self.baseurl + url)
-        time.sleep(self.default)
         self._check()
         novel_name = self._browser.find_element(By.CSS_SELECTOR, '.right > h1:nth-child(1)').text
         novel_author = self._browser.find_element(By.CSS_SELECTOR, 'p.info').text.split('\n')[0].replace('作者：', '')
@@ -122,7 +150,6 @@ class SpiderBanZhu:
         print("====================")
         print("下载开始")
         while True:
-            time.sleep(self.default)
             self._check()
             content = self.get_content()
             with open(f'./result/[{novel_author}] {novel_name}{target}.txt', 'wb') as f:
@@ -138,31 +165,6 @@ class SpiderBanZhu:
                 print('下载结束')
                 print("====================")
                 break
-
-    def _verify(self, url):
-        """进行验证绕过"""
-        self._browser.get(url)
-        self._browser.add_cookie({'name': 'cf_clearance', 'value': self.cf_clearance})
-        self._browser.get(url + '/?__cf_chl_tk=' + self.cf_referer)
-        time.sleep(self.default)
-        self._browser.find_element(By.CSS_SELECTOR, '#password').send_keys('1234')
-        self._browser.find_element(By.CSS_SELECTOR, '.login').click()
-        time.sleep(self.default)
-
-    def _check(self):
-        """检查页面是否正常"""
-        flag = 0
-        while flag < 5:
-            try:
-                self._browser.find_element(By.CSS_SELECTOR, '.logo img')
-                break
-            except BaseException:  # noqa
-                flag += 1
-                print('跳转异常，重试中。。。')
-                self._browser.refresh()
-                time.sleep(self.default)
-        else:
-            sys.exit("Cloudflare Cookie 过期，请重新获取！")
 
     def get_catalog(self):
         catalog = []
@@ -184,7 +186,6 @@ class SpiderBanZhu:
                 else:
                     break
             _next.click()
-            time.sleep(self.default)
             self._check()
         return catalog
 
@@ -210,7 +211,6 @@ class SpiderBanZhu:
                 content = content + new_content
             if _ + 1 < len(content_page):
                 self._browser.find_elements(By.CSS_SELECTOR, 'center.chapterPages a')[_ + 1].click()
-                time.sleep(self.default)
                 self._check()
         return content
 
