@@ -7,7 +7,8 @@ __pycache__/
 *.so
 
 # User
-result/
+result/*.txt
+.idea/
 
 # Distribution / packaging
 .Python
