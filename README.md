@@ -1,5 +1,7 @@
 # novel-spider-banzhu
 
+@LMingJian 2025
+
 ## 这是什么？
 
 这是小说爬取项目 novel-spider 的特化版本，针对的是某版主网站。
